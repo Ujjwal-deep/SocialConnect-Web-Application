@@ -133,7 +133,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="p-0 mt-6 justify-center">
           <p className="t-sm text-text-muted">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" className="text-accent font-medium hover:underline">
               Register
             </Link>
