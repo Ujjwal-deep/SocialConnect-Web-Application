@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, User, LogOut, Users } from 'lucide-react'
 
@@ -22,11 +23,11 @@ export default function Sidebar({ user, profile }: SidebarProps) {
   const router = useRouter()
 
   const initials = profile
-    ? `${profile.first_name[0] ?? ''}${profile.last_name[0] ?? ''}`.toUpperCase()
+    ? `${profile.first_name[0] ?? ''}${profile.last_name[0] ?? ''}`.toUpperCase() || profile.username[0]?.toUpperCase() || '?'
     : user.email[0].toUpperCase()
 
   const displayName = profile
-    ? `${profile.first_name} ${profile.last_name}`
+    ? `${profile.first_name} ${profile.last_name}`.trim() || profile.username
     : user.email
 
   const handle = profile ? `@${profile.username}` : user.email
@@ -65,7 +66,10 @@ export default function Sidebar({ user, profile }: SidebarProps) {
 
       <nav className="nav-section">
         {navLinks.map((link) => {
-          const isActive = pathname === link.href || (link.href !== '/feed' && pathname.startsWith(link.href))
+          const isActive =
+            link.href === '/feed'
+              ? pathname === '/feed'
+              : pathname.startsWith(link.href)
           return (
             <Link
               key={link.href}
@@ -82,6 +86,7 @@ export default function Sidebar({ user, profile }: SidebarProps) {
       <div style={{ marginTop: 'auto' }}>
         <button
           onClick={handleLogout}
+          id="logout-btn"
           className="nav-link btn--ghost"
           style={{ width: '100%', justifyContent: 'flex-start', cursor: 'pointer', background: 'none', border: '1px solid transparent' }}
         >
@@ -89,15 +94,30 @@ export default function Sidebar({ user, profile }: SidebarProps) {
           Sign out
         </button>
 
-        <div className="nav-user" style={{ marginTop: '12px' }}>
-          <div className="avatar--initials avatar--sm" aria-hidden="true">
-            {initials}
-          </div>
+        <Link
+          href={`/profile/${user.id}`}
+          className="nav-user"
+          style={{ marginTop: 12, textDecoration: 'none' }}
+        >
+          {profile?.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt={displayName}
+              width={32}
+              height={32}
+              className="avatar avatar--sm"
+              style={{ objectFit: 'cover', flexShrink: 0 }}
+            />
+          ) : (
+            <div className="avatar--initials avatar--sm" aria-hidden="true">
+              {initials}
+            </div>
+          )}
           <div className="nav-user-info">
             <div className="nav-user-name">{displayName}</div>
             <div className="nav-user-handle">{handle}</div>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   )

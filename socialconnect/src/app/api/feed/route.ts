@@ -14,35 +14,75 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') ?? '10')))
   const offset = (page - 1) * limit
 
-  // Get all active posts (chronological), include author info
-  const { data: posts, error, count } = await supabase
-    .from('posts')
-    .select(`
-      id,
-      content,
-      image_url,
-      like_count,
-      comment_count,
-      created_at,
-      author_id,
-      profiles:author_id (
-        id,
-        username,
-        first_name,
-        last_name,
-        avatar_url
-      )
-    `, { count: 'exact' })
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+  // Get list of users the current user follows
+  const { data: followingRows } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', user.id)
 
-  if (error) {
-    return NextResponse.json({ error: error.message, status: 500 }, { status: 500 })
+  const followedIds = (followingRows ?? []).map((r: { following_id: string }) => r.following_id)
+
+  let posts: Record<string, unknown>[] = []
+  let total = 0
+
+  if (followedIds.length > 0) {
+    // Fetch followed users' posts first (chronological), then fill with others
+    const postFields = `
+      id, content, image_url, like_count, comment_count, created_at, author_id,
+      profiles:author_id ( id, username, first_name, last_name, avatar_url )
+    `
+
+    // Followed users' posts
+    const { data: followedPosts, count: followedCount } = await supabase
+      .from('posts')
+      .select(postFields, { count: 'exact' })
+      .eq('is_active', true)
+      .in('author_id', followedIds)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    const followedPostsArr = followedPosts ?? []
+    total = followedCount ?? 0
+
+    // If we still have room in this page, pad with non-followed posts
+    const remainingSlots = limit - followedPostsArr.length
+    let otherPosts: Record<string, unknown>[] = []
+
+    if (page === 1 && remainingSlots > 0 && (followedCount ?? 0) <= limit) {
+      const followedPostIds = followedPostsArr.map((p: Record<string, unknown>) => p.id as string)
+      const excludeIds = [...followedIds, ...(followedPostIds.length > 0 ? [] : [])]
+
+      const { data: others, count: othersCount } = await supabase
+        .from('posts')
+        .select(postFields, { count: 'exact' })
+        .eq('is_active', true)
+        .not('author_id', 'in', `(${[...followedIds, user.id].join(',')})`)
+        .order('created_at', { ascending: false })
+        .range(0, remainingSlots - 1)
+
+      otherPosts = (others ?? []) as Record<string, unknown>[]
+      total += (othersCount ?? 0)
+    }
+
+    posts = [...followedPostsArr as Record<string, unknown>[], ...otherPosts]
+  } else {
+    // No follows — return all public posts chronologically
+    const { data: allPosts, count } = await supabase
+      .from('posts')
+      .select(`
+        id, content, image_url, like_count, comment_count, created_at, author_id,
+        profiles:author_id ( id, username, first_name, last_name, avatar_url )
+      `, { count: 'exact' })
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    posts = (allPosts ?? []) as Record<string, unknown>[]
+    total = count ?? 0
   }
 
-  // Get likes for this user on these posts
-  const postIds = (posts ?? []).map((p: { id: string }) => p.id)
+  // Hydrate is_liked_by_me
+  const postIds = posts.map((p) => p.id as string)
   let likedPostIds = new Set<string>()
 
   if (postIds.length > 0) {
@@ -57,9 +97,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const postsWithLikes = (posts ?? []).map((post: { id: string; [key: string]: unknown }) => ({
+  const postsWithLikes = posts.map((post) => ({
     ...post,
-    is_liked_by_me: likedPostIds.has(post.id),
+    profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
+    is_liked_by_me: likedPostIds.has(post.id as string),
   }))
 
   return NextResponse.json({
@@ -67,8 +108,8 @@ export async function GET(request: NextRequest) {
     pagination: {
       page,
       limit,
-      total: count ?? 0,
-      hasMore: (count ?? 0) > offset + limit,
+      total,
+      hasMore: total > offset + limit,
     },
   })
 }

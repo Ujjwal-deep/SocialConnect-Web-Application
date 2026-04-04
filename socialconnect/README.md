@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SocialConnect
 
-## Getting Started
+A full-featured social networking application built with **Next.js 14**, **TypeScript**, **Supabase**, and the **Amber Noir** design system.
 
-First, run the development server:
+---
+
+## Features
+
+- 🔐 **Authentication** — Register & login with email or username
+- 📝 **Posts** — Create text & image posts (soft-delete on remove)
+- 🤙 **Feed** — Paginated, chronological feed. Prioritises posts from followed users when you follow anyone
+- ❤️ **Likes** — Toggle likes with optimistic UI updates
+- 💬 **Comments** — Nested comment thread per post
+- 👤 **User Profiles** — Full profile pages with stats (posts, followers, following)
+- ✏️ **Edit Profile** — Update name, bio (160 char), website, location, and avatar
+- 📸 **Avatar Upload** — JPEG / PNG, max 2 MB, stored in Supabase Storage
+- 👥 **Follow / Unfollow** — Follow other users, counts updated atomically
+- 🔍 **People Page** — Browse & search users, follow directly from the list
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14.2.3 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS + custom CSS (Amber Noir design system) |
+| UI Components | shadcn/ui + Radix UI |
+| Database & Auth | Supabase (PostgreSQL + Auth + Storage) |
+| Forms | react-hook-form + Zod |
+
+---
+
+## Setup
+
+### 1. Clone and install
+
+```bash
+git clone <repo-url>
+cd socialconnect
+npm install
+```
+
+### 2. Configure environment variables
+
+Create a `.env.local` file at the root of the `socialconnect` directory:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+> **Never commit `.env.local` to version control.**
+
+### 3. Set up the database
+
+1. Open your [Supabase project](https://supabase.com/dashboard) → **SQL Editor**
+2. Run `supabase/schema.sql` (base schema — tables, RLS, storage buckets)
+3. Run `supabase/phase3_migration.sql` (adds RPC functions for follow counts)
+
+### 4. Configure Supabase Storage
+
+Ensure both storage buckets are **public** in your Supabase dashboard:
+- `post-images` — for post images
+- `avatars` — for user avatars
+
+### 5. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000). You will be redirected to `/login`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Required Environment Variables
 
-## Learn More
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous (public) API key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only, for admin operations) |
 
-To learn more about Next.js, take a look at the following resources:
+> The service role key is used **only** on the server (API routes) to bypass RLS for atomic counter updates (like_count, comment_count, follower_count, following_count) — it is never exposed to the browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── (auth)/          # Login, Register pages
+│   ├── (main)/          # Protected pages: feed, profile, people, posts
+│   └── api/             # API routes
+│       ├── auth/        # login, logout, register
+│       ├── feed/        # GET feed
+│       ├── posts/       # CRUD posts, likes, comments
+│       └── users/       # Users list, profile, follow, followers, following
+├── components/
+│   ├── layout/          # Sidebar
+│   ├── posts/           # PostCard, NewPostDialog, CommentList
+│   ├── profile/         # FollowButton, EditProfileDialog
+│   └── ui/              # shadcn/ui base components
+└── lib/
+    └── supabase/        # server, client, middleware, admin clients
+```
