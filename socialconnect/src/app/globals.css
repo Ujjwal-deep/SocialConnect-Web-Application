@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* --- Amber Noir Shadcn/UI Overrides --- */
+    --background: 15 13 10;
+    --foreground: 245 237 216;
+
+    --card: 20 19 16;
+    --card-foreground: 245 237 216;
+
+    --popover: 28 26 22;
+    --popover-foreground: 245 237 216;
+
+    --primary: 239 159 39;
+    --primary-foreground: 13 12 10;
+
+    --secondary: 35 32 24;
+    --secondary-foreground: 168 152 128;
+
+    --muted: 46 42 34;
+    --muted-foreground: 107 95 80;
+
+    --accent: 239 159 39;
+    --accent-foreground: 13 12 10;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+
+    --border: 46 42 34;
+    --input: 35 32 24;
+    --ring: 239 159 39;
+
+    --radius: 0.5rem;
+
+    /* --- Design System Core Variables --- */
+    --surface-base: #0D0C0A;
+    --surface-raised: #141310;
+    --surface-overlay: #1C1A16;
+    --surface-subtle: #232018;
+    --surface-muted: #2E2A22;
+
+    --text-primary: #F5EDD8;
+    --text-secondary: #A89880;
+    --text-muted: #6B5F50;
+    --text-inverse: #0D0C0A;
+
+    --accent-color: #EF9F27;
+    --accent-hover: #D4820F;
+    --accent-muted: rgba(250, 199, 117, 0.125);
+    --accent-border: rgba(250, 199, 117, 0.25);
+
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'DM Mono', 'Fira Code', monospace;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+
+    --border-subtle: 1px solid var(--surface-muted);
+    --border-strong: 1px solid #4A3F2E;
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.6);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.7);
+    --shadow-amber: 0 0 20px rgba(239,159,39,0.15);
+
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-surface-base text-text-primary;
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* --- Typeography Classes --- */
+.t-display {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.t-h1, h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.t-h2, h2 {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 500;
+}
+
+.t-h3, h3 {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.t-body, p {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.t-sm { font-size: 0.8125rem; @apply text-text-secondary; }
+.t-xs { font-size: 0.75rem; @apply text-text-muted; }
+.t-accent { @apply text-accent; }
+.t-muted { @apply text-text-muted; }
+
+/* --- Design System Components --- */
+
+/* Auth card — centered, wider */
+.card--auth {
+  @apply bg-surface-raised border border-surface-muted shadow-lg;
+  border-radius: var(--radius-xl);
+  padding: var(--space-10) var(--space-8);
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-layout {
+  min-height: 100vh;
+  @apply flex items-center justify-center bg-surface-base p-4;
+}
+
+/* Button overrides for project look */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 font-medium transition-all cursor-pointer whitespace-nowrap outline-none;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  border-radius: var(--radius-md);
+  padding: 0.5625rem var(--space-5);
+  line-height: 1;
+}
+
+.btn--primary {
+  @apply bg-accent text-text-inverse border border-accent;
+}
+.btn--primary:hover {
+  @apply bg-accent-hover border-accent-hover -translate-y-[1px];
+  box-shadow: 0 4px 12px rgba(239,159,39,0.3);
+}
+
+.btn--full { @apply w-full; }
+
+/* Form Grouping */
+.form-group { @apply flex flex-col gap-2; }
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  @apply text-text-secondary;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.form-input {
+  @apply w-full bg-surface-subtle border border-surface-muted px-4 transition-all outline-none;
+  border-radius: var(--radius-md);
+  padding-top: 0.6875rem;
+  padding-bottom: 0.6875rem;
+  font-size: 0.9375rem;
+}
+
+.form-input:focus {
+  @apply border-accent;
+  box-shadow: 0 0 0 3px rgba(239,159,39,0.12);
+}
+
+.form-error {
+  font-size: 0.8125rem;
+  @apply text-red-500 flex items-center gap-1;
+}
+
+/* Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
