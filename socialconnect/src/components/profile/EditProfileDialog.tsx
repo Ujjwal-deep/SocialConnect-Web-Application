@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Loader2, Camera, X } from 'lucide-react'
+import { Camera, X } from 'lucide-react'
+import { Spinner } from '@/components/ui/Spinner'
 
 interface Profile {
   first_name: string
@@ -167,7 +168,7 @@ export default function EditProfileDialog({ profile, onSaved }: EditProfileDialo
                 position: 'absolute',
                 bottom: 0,
                 right: 0,
-                background: 'var(--accent)',
+                background: 'var(--accent-color)',
                 border: '2px solid var(--surface-overlay)',
                 borderRadius: '50%',
                 width: 30,
@@ -293,7 +294,7 @@ export default function EditProfileDialog({ profile, onSaved }: EditProfileDialo
               onClick={handleSave}
               disabled={saving || bioLength > 160}
             >
-              {saving && <Loader2 size={14} style={{ animation: 'spin 0.6s linear infinite' }} />}
+              {saving && <Spinner size="sm" />}
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
           </div>

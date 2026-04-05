@@ -7,6 +7,10 @@ export const metadata = {
 }
 
 export default async function PeoplePage() {
+  // Add a small artificial delay to ensure the Luma Spinner is visible
+  // for a consistent UX, even if the data fetch is nearly instant.
+  await new Promise((resolve) => setTimeout(resolve, 800))
+  
   const supabase = createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

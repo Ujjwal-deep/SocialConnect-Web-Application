@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -24,9 +25,10 @@ export async function POST(request: Request) {
 
     const { email, username, password, first_name, last_name } = result.data
     const supabase = createClient()
+    const adminClient = createAdminClient()
 
     // 1. Check if username is already taken in profiles table
-    const { data: existingUser, error: checkError } = await supabase
+    const { data: existingUser } = await supabase
       .from('profiles')
       .select('id')
       .eq('username', username)
@@ -39,11 +41,26 @@ export async function POST(request: Request) {
       )
     }
 
-    // 2. Sign up with Supabase Auth
+    // 2. Check if email already exists in profiles table
+    const { data: existingEmail } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .single()
+
+    if (existingEmail) {
+      return NextResponse.json(
+        { error: 'An account with this email already exists.', status: 409 },
+        { status: 409 }
+      )
+    }
+
+    // 3. Sign up with Supabase Auth
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
         data: {
           username,
           first_name,
@@ -66,15 +83,16 @@ export async function POST(request: Request) {
       )
     }
 
-    // 3. Fallback: Manually ensure profile exists (in case trigger fails)
-    const { data: profile, error: profileError } = await supabase
+    // 4. Check if trigger already created the profile
+    const { data: profile } = await adminClient
       .from('profiles')
       .select('*')
       .eq('id', authData.user.id)
       .single()
 
-    if (profileError || !profile) {
-      const { data: newProfile, error: insertError } = await supabase
+    if (!profile) {
+      // Trigger didn't run — manually insert using service role to bypass RLS
+      const { data: newProfile, error: insertError } = await adminClient
         .from('profiles')
         .insert({
           id: authData.user.id,
@@ -87,16 +105,17 @@ export async function POST(request: Request) {
         .single()
 
       if (insertError) {
-         // If trigger already handled it, this might fail with conflict, which is fine
-         if (insertError.code !== '23505') { 
-            return NextResponse.json(
-                { error: 'Account created but profile failed: ' + insertError.message, status: 500 },
-                { status: 500 }
-            )
-         }
+        // If trigger already handled it concurrently (race), that's fine
+        if (insertError.code !== '23505') {
+          return NextResponse.json(
+            { error: 'Account created but profile setup failed. Please contact support.', status: 500 },
+            { status: 500 }
+          )
+        }
       }
-      
-      const finalProfile = newProfile || (await supabase.from('profiles').select('*').eq('id', authData.user.id).single()).data
+
+      const finalProfile = newProfile
+        || (await adminClient.from('profiles').select('*').eq('id', authData.user.id).single()).data
 
       return NextResponse.json({
         user: finalProfile,

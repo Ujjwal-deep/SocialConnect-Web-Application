@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, MessageCircle, Trash2, MoreHorizontal } from 'lucide-react'
+import { useLoading } from '@/components/providers/LoadingProvider'
+import { usePathname } from 'next/navigation'
 
 interface Author {
   id: string
@@ -71,6 +73,8 @@ export default function PostCard({ post, currentUserId, onDelete }: PostCardProp
   const [likeLoading, setLikeLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { startLoading } = useLoading()
+  const pathname = usePathname()
 
   const author = post.profiles
   const isAuthor = post.author_id === currentUserId
@@ -119,12 +123,23 @@ export default function PostCard({ post, currentUserId, onDelete }: PostCardProp
     <article className="post-card">
       {/* Header */}
       <div className="post-card__header">
-        <Link href={`/profile/${author.id}`}>
+        <Link 
+          href={`/profile/${author.id}`}
+          onClick={() => {
+            if (pathname !== `/profile/${author.id}`) startLoading()
+          }}
+        >
           <AuthorAvatar author={author} size="md" />
         </Link>
 
         <div className="post-card__author-info">
-          <Link href={`/profile/${author.id}`} className="post-card__author-name">
+          <Link 
+            href={`/profile/${author.id}`} 
+            className="post-card__author-name"
+            onClick={() => {
+              if (pathname !== `/profile/${author.id}`) startLoading()
+            }}
+          >
             {author.first_name} {author.last_name}
           </Link>
           <div className="post-card__meta">
@@ -225,6 +240,9 @@ export default function PostCard({ post, currentUserId, onDelete }: PostCardProp
           href={`/posts/${post.id}`}
           className="post-action-btn"
           style={{ textDecoration: 'none' }}
+          onClick={() => {
+            if (pathname !== `/posts/${post.id}`) startLoading()
+          }}
         >
           <MessageCircle size={16} />
           <span>{post.comment_count > 0 ? post.comment_count : ''}</span>

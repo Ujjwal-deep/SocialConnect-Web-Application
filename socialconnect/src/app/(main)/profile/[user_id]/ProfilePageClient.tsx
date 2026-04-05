@@ -106,33 +106,55 @@ export default function ProfilePageClient({
     <div className="main-content" style={{ maxWidth: 680, padding: 'var(--space-8) var(--space-6)' }}>
       {/* Profile Header Card */}
       <div className="card" style={{ marginBottom: 'var(--space-6)', borderRadius: 'var(--radius-xl)' }}>
-        {/* Top row: avatar + actions */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+
+        {/* Top row: avatar | stats + actions */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-6)', marginBottom: 'var(--space-4)' }}>
+          {/* Avatar */}
           <Avatar profile={profile} size="2xl" />
 
-          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-            {isOwn ? (
-              <EditProfileDialog
-                profile={{
-                  first_name: profile.first_name,
-                  last_name: profile.last_name,
-                  bio: profile.bio,
-                  website: profile.website,
-                  location: profile.location,
-                  avatar_url: profile.avatar_url,
-                  username: profile.username,
-                }}
-                onSaved={handleProfileSaved}
-              />
-            ) : currentUserId ? (
-              <FollowButton
-                targetUserId={profile.id}
-                initialIsFollowing={initialIsFollowing}
-                onFollowChange={handleFollowChange}
-              />
-            ) : (
-              <Link href="/login" className="btn btn--primary btn--sm">Follow</Link>
-            )}
+          {/* Stats + action button */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', minWidth: 0 }}>
+            {/* Action button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              {isOwn ? (
+                <EditProfileDialog
+                  profile={{
+                    first_name: profile.first_name,
+                    last_name: profile.last_name,
+                    bio: profile.bio,
+                    website: profile.website,
+                    location: profile.location,
+                    avatar_url: profile.avatar_url,
+                    username: profile.username,
+                  }}
+                  onSaved={handleProfileSaved}
+                />
+              ) : currentUserId ? (
+                <FollowButton
+                  targetUserId={profile.id}
+                  initialIsFollowing={initialIsFollowing}
+                  onFollowChange={handleFollowChange}
+                />
+              ) : (
+                <Link href="/login" className="btn btn--primary btn--sm">Follow</Link>
+              )}
+            </div>
+
+            {/* Stats row — right of avatar, larger values */}
+            <div style={{ display: 'flex', gap: 'var(--space-8)', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.625rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{profile.posts_count}</span>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: 4 }}>Posts</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.625rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{followerCount}</span>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: 4 }}>Followers</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.625rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{profile.following_count}</span>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: 4 }}>Following</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -144,15 +166,15 @@ export default function ProfilePageClient({
           </p>
         </div>
 
-        {/* Bio */}
+        {/* Bio — constrained width to prevent overlap */}
         {profile.bio && (
-          <p className="t-body" style={{ marginBottom: 'var(--space-3)', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+          <p className="t-body" style={{ marginBottom: 'var(--space-3)', color: 'var(--text-secondary)', lineHeight: 1.65, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
             {profile.bio}
           </p>
         )}
 
         {/* Meta info row */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', marginBottom: 'var(--space-4)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
           {profile.location && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <MapPin size={14} />
@@ -175,22 +197,6 @@ export default function ProfilePageClient({
             <Calendar size={14} />
             Joined {formatMemberSince(profile.created_at)}
           </span>
-        </div>
-
-        {/* Stats */}
-        <div className="stat-group" style={{ paddingTop: 'var(--space-4)', borderTop: '1px solid var(--surface-muted)' }}>
-          <div className="stat-item">
-            <span className="stat-value">{profile.posts_count}</span>
-            <span className="stat-label">Posts</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-value">{followerCount}</span>
-            <span className="stat-label">Followers</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-value">{profile.following_count}</span>
-            <span className="stat-label">Following</span>
-          </div>
         </div>
       </div>
 

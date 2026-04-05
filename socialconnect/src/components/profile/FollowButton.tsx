@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, UserCheck, UserPlus } from 'lucide-react'
+import { UserCheck, UserPlus } from 'lucide-react'
+import { Spinner } from '@/components/ui/Spinner'
 
 interface FollowButtonProps {
   targetUserId: string
@@ -43,7 +44,7 @@ export default function FollowButton({ targetUserId, initialIsFollowing, onFollo
         aria-label={isFollowing ? 'Unfollow user' : 'Follow user'}
       >
         {loading ? (
-          <Loader2 size={14} style={{ animation: 'spin 0.6s linear infinite' }} />
+          <Spinner size="sm" />
         ) : isFollowing ? (
           <UserCheck size={14} />
         ) : (

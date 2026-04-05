@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, User, LogOut, Users } from 'lucide-react'
+import { useLoading } from '@/components/providers/LoadingProvider'
 
 interface SidebarProps {
   user: {
@@ -21,6 +22,7 @@ interface SidebarProps {
 export default function Sidebar({ user, profile }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { startLoading } = useLoading()
 
   const initials = profile
     ? `${profile.first_name[0] ?? ''}${profile.last_name[0] ?? ''}`.toUpperCase() || profile.username[0]?.toUpperCase() || '?'
@@ -58,7 +60,13 @@ export default function Sidebar({ user, profile }: SidebarProps) {
 
   return (
     <aside className="sidebar">
-      <Link href="/feed" className="nav-logo">
+      <Link 
+        href="/feed" 
+        className="nav-logo"
+        onClick={() => {
+          if (pathname !== '/feed') startLoading()
+        }}
+      >
         Social<span>Connect</span>
       </Link>
 
@@ -75,6 +83,9 @@ export default function Sidebar({ user, profile }: SidebarProps) {
               key={link.href}
               href={link.href}
               className={`nav-link${isActive ? ' nav-link--active' : ''}`}
+              onClick={() => {
+                if (pathname !== link.href) startLoading()
+              }}
             >
               {link.icon}
               {link.label}
@@ -83,21 +94,15 @@ export default function Sidebar({ user, profile }: SidebarProps) {
         })}
       </nav>
 
+      {/* User card with logout button integrated */}
       <div style={{ marginTop: 'auto' }}>
-        <button
-          onClick={handleLogout}
-          id="logout-btn"
-          className="nav-link btn--ghost"
-          style={{ width: '100%', justifyContent: 'flex-start', cursor: 'pointer', background: 'none', border: '1px solid transparent' }}
-        >
-          <LogOut size={18} className="nav-icon" />
-          Sign out
-        </button>
-
         <Link
           href={`/profile/${user.id}`}
           className="nav-user"
-          style={{ marginTop: 12, textDecoration: 'none' }}
+          style={{ textDecoration: 'none' }}
+          onClick={() => {
+            if (pathname !== `/profile/${user.id}`) startLoading()
+          }}
         >
           {profile?.avatar_url ? (
             <Image
@@ -113,10 +118,40 @@ export default function Sidebar({ user, profile }: SidebarProps) {
               {initials}
             </div>
           )}
-          <div className="nav-user-info">
+          <div className="nav-user-info" style={{ flex: 1, minWidth: 0 }}>
             <div className="nav-user-name">{displayName}</div>
             <div className="nav-user-handle">{handle}</div>
           </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleLogout()
+            }}
+            title="Sign out"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              color: 'var(--text-muted)',
+              flexShrink: 0,
+              transition: 'color 150ms ease, background 150ms ease',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = '#E24B4A'
+              ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(226,75,74,0.1)'
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'
+              ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+            }}
+          >
+            <LogOut size={16} />
+          </button>
         </Link>
       </div>
     </aside>

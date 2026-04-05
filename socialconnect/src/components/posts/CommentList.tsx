@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Loader2, Send, Trash2 } from 'lucide-react'
+import { Send, Trash2 } from 'lucide-react'
+import { Spinner } from '@/components/ui/Spinner'
 
 interface Author {
   id: string
@@ -109,7 +110,7 @@ export default function CommentList({ postId, currentUserId, initialCommentCount
       {/* Comment list */}
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-          <Loader2 size={20} style={{ animation: 'spin 0.6s linear infinite' }} />
+          <Spinner size="md" />
         </div>
       ) : comments.length === 0 ? (
         <div className="empty-state" style={{ padding: '32px 0' }}>
@@ -189,7 +190,7 @@ export default function CommentList({ postId, currentUserId, initialCommentCount
               style={{ opacity: submitting || content.trim().length === 0 ? 0.6 : 1 }}
             >
               {submitting ? (
-                <Loader2 size={14} style={{ animation: 'spin 0.6s linear infinite' }} />
+                <Spinner size="sm" />
               ) : (
                 <Send size={14} />
               )}

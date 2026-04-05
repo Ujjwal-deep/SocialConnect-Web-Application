@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2, PenSquare } from 'lucide-react'
+import { PenSquare } from 'lucide-react'
 import PostCard from '@/components/posts/PostCard'
 import NewPostDialog from '@/components/posts/NewPostDialog'
+import { Spinner } from '@/components/ui/Spinner'
 
 interface Author {
   id: string
@@ -141,7 +142,7 @@ export default function FeedPageClient({
             >
               {loadingMore ? (
                 <>
-                  <Loader2 size={14} style={{ animation: 'spin 0.6s linear infinite' }} />
+                  <Spinner size="sm" />
                   Loading…
                 </>
               ) : (

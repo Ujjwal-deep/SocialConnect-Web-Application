@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { ImagePlus, X, Loader2 } from 'lucide-react'
+import { ImagePlus, X } from 'lucide-react'
+import { Spinner } from '@/components/ui/Spinner'
 import {
   Dialog,
   DialogTrigger,
@@ -243,7 +244,7 @@ export default function NewPostDialog({ currentUserId, profile, onPostCreated, t
               >
                 {submitting ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Loader2 size={14} style={{ animation: 'spin 0.6s linear infinite' }} />
+                    <Spinner size="sm" />
                     Posting…
                   </span>
                 ) : 'Post'}

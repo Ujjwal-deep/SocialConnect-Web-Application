@@ -19,6 +19,10 @@ export async function generateMetadata({ params }: { params: { user_id: string }
 }
 
 export default async function ProfilePage({ params }: { params: { user_id: string } }) {
+  // Add a small artificial delay to ensure the Luma Spinner is visible
+  // for a consistent UX, even if the data fetch is nearly instant.
+  await new Promise((resolve) => setTimeout(resolve, 800))
+  
   const supabase = createClient()
 
   // Auth check (session may be anonymous — profile is public but we need current user for follow state)

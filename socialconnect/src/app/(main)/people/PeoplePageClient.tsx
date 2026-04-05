@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, UserCheck, UserPlus, Loader2 } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Search, UserCheck, UserPlus } from 'lucide-react'
+import { Spinner } from '@/components/ui/Spinner'
+import { useLoading } from '@/components/providers/LoadingProvider'
 
 interface UserEntry {
   id: string
@@ -43,6 +46,8 @@ function UserAvatar({ user }: { user: Pick<UserEntry, 'first_name' | 'last_name'
 function UserCard({ user, currentUserId }: { user: UserEntry; currentUserId: string | null }) {
   const [isFollowing, setIsFollowing] = useState(user.is_following)
   const [loading, setLoading] = useState(false)
+  const { startLoading } = useLoading()
+  const pathname = usePathname()
 
   const isOwn = currentUserId === user.id
   const displayName = `${user.first_name} ${user.last_name}`.trim() || user.username
@@ -69,7 +74,14 @@ function UserCard({ user, currentUserId }: { user: UserEntry; currentUserId: str
         padding: 'var(--space-4) var(--space-5)',
       }}
     >
-      <Link href={`/profile/${user.id}`} style={{ flexShrink: 0 }}>
+      <Link 
+        href={`/profile/${user.id}`} 
+        prefetch={false} 
+        style={{ flexShrink: 0 }}
+        onClick={() => {
+          if (pathname !== `/profile/${user.id}`) startLoading()
+        }}
+      >
         <UserAvatar user={user} />
       </Link>
 
@@ -78,7 +90,11 @@ function UserCard({ user, currentUserId }: { user: UserEntry; currentUserId: str
           <div style={{ minWidth: 0 }}>
             <Link
               href={`/profile/${user.id}`}
+              prefetch={false}
               style={{ textDecoration: 'none', display: 'block' }}
+              onClick={() => {
+                if (pathname !== `/profile/${user.id}`) startLoading()
+              }}
             >
               <span className="t-username" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {displayName}
@@ -99,7 +115,7 @@ function UserCard({ user, currentUserId }: { user: UserEntry; currentUserId: str
               aria-label={isFollowing ? `Unfollow ${user.username}` : `Follow ${user.username}`}
             >
               {loading ? (
-                <Loader2 size={13} style={{ animation: 'spin 0.6s linear infinite' }} />
+                <Spinner size="sm" />
               ) : isFollowing ? (
                 <UserCheck size={13} />
               ) : (
