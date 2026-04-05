@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const MAX_CONTENT_LENGTH = 280
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024
@@ -159,7 +160,8 @@ export async function DELETE(
     return NextResponse.json({ error: 'Forbidden', status: 403 }, { status: 403 })
   }
 
-  const { error: deleteError } = await supabase
+  const adminSupabase = createAdminClient()
+  const { error: deleteError } = await adminSupabase
     .from('posts')
     .update({ is_active: false })
     .eq('id', params.post_id)
@@ -176,7 +178,7 @@ export async function DELETE(
     .single()
 
   if (profile) {
-    await supabase
+    await adminSupabase
       .from('profiles')
       .update({ posts_count: Math.max(0, (profile.posts_count ?? 1) - 1) })
       .eq('id', user.id)
